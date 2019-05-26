@@ -8,16 +8,14 @@ const { MONGODB_URL } = require('./src/config/constants');
 const app = express();
 const server = require('http').Server(app);
 
+const authRoutes = require('./src/routes/auth');
+
 app.use(bodyParser.json());
 
-app.get('/', (req, res, next) => {
-	res.status(200).json({ hello: 'world' });
-});
+app.use(authRoutes);
 
-mongoose.connect(MONGODB_URL, {useNewUrlParser: true})
+mongoose.connect(MONGODB_URL, { useNewUrlParser: true })
 .then(() => {
 	server.listen(3000, () => console.log('Server Started'));	
 })
 .catch(err => console.log(err));
-
-
