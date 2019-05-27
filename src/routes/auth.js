@@ -36,4 +36,9 @@ routes.post('/signup', [
 		})
 ], authController.signup);
 
+routes.post('/login', [
+	body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
+	body('password').trim().not().isEmpty()
+], authController.login);
+
 module.exports = routes;

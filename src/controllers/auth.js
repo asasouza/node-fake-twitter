@@ -38,3 +38,41 @@ exports.signup = async (req, res, next) => {
 		return next(err);
 	}
 };
+
+exports.login = async (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const error = new Error('Validation Failed');
+		error.statusCode = 422;
+		error.data = errors.array();
+		return next(error);
+	}
+	const { email, password } = req.body;
+
+	const user = await User.findOne({ email });
+	if (!user) {
+		const error = new Error('Wrong email or password!');
+		error.statusCode = 401;
+		return next(error);
+	}
+
+	if (!await bcrypt.compare(password, user.password)) {
+		const error = new Error('Wrong email or password!');
+		error.statusCode = 401;
+		return next(error);
+	}
+	const token = jwt.sign(
+		{
+			email,
+			userID: user._id.toString()
+		},
+		JWT_SECRET
+	);
+	res.status(200).json({ 
+		token, 
+		userID: user._id.toString(),
+		username: user.username,
+		picture: user.picture,
+		bio: user.bio
+	});
+};
