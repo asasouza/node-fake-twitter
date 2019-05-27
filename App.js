@@ -14,6 +14,12 @@ app.use(bodyParser.json());
 
 app.use(authRoutes);
 
+// error handler
+app.use((error, req, res, next) => {
+	const { statusCode, message, data } = error;
+	res.status(statusCode || 500).json({ message, data });
+});
+
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true })
 .then(() => {
 	server.listen(3000, () => console.log('Server Started'));	
