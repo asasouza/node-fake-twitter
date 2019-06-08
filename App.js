@@ -9,10 +9,12 @@ const app = express();
 const server = require('http').Server(app);
 
 const authRoutes = require('./src/routes/auth');
+const tweetRoutes = require('./src/routes/tweet');
 
 app.use(bodyParser.json());
 
 app.use(authRoutes);
+app.use(tweetRoutes);
 
 // error handler
 app.use((error, req, res, next) => {

@@ -9,7 +9,8 @@ const tweetSchema = new Schema(
 		maxLength: 140,
 	},
 	author: {
-		type: { type: Schema.Types.ObjectId, ref: 'User' },
+		type: Schema.Types.ObjectId, 
+		ref: 'User',
 		required: true
 	},
 	likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
