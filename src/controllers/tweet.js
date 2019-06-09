@@ -4,7 +4,30 @@ const { validationResult } = require('express-validator/check');
 const Tweet = require('../models/tweet');
 
 exports.list = async (req, res, next) => {
-	res.json({ teste: 'list' });
+	let { query: { limit, offset } } = req;
+	const { user } = req;
+	try {
+		limit = parseInt(limit, 10) || 20;
+		offset = parseInt(offset, 10) || 0;
+		const tweets = await Tweet.find({
+			$or: [
+				{ author: user },
+				{ author: { $in: user.following } }
+
+			]
+		})
+		.populate('author', ['username', 'picture'])
+		.skip(offset)
+		.limit(limit)
+		.sort({ createdAt: -1 });
+
+		res.json({ message: 'Tweets Founded', tweets });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		return next(err);
+	}
 };
 
 exports.details = async (req, res, next) => {
