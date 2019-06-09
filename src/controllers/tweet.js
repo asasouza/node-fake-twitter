@@ -8,7 +8,22 @@ exports.list = async (req, res, next) => {
 };
 
 exports.details = async (req, res, next) => {
-	res.json({ teste: 'details' });
+	const { params: { id } } = req;
+	try {
+		const tweet = await Tweet.findById(id).populate('author', ['username', 'picture']);
+		if (!tweet) {
+			const error = new Error('Tweet not found!');
+			error.statusCode = 404;
+			throw error;
+		}
+
+		res.json({ message: 'Tweet found', tweet });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		return next(err);
+	}
 };
 
 exports.create = async (req, res, next) => {

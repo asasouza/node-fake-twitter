@@ -7,7 +7,7 @@ const isAuth = require('../helpers/isAuth');
 
 const routes = express.Router();
 
-routes.get('/tweets', tweetController.list);
+routes.get('/tweets', isAuth, tweetController.list);
 
 routes.get('/tweets/:id', tweetController.details);
 
