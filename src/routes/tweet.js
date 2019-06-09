@@ -11,6 +11,8 @@ routes.get('/tweets', isAuth, tweetController.list);
 
 routes.get('/tweets/:id', tweetController.details);
 
+routes.delete('/tweets/:id', isAuth, tweetController.delete);
+
 routes.post('/tweets', isAuth, [
 	body('content')
 		.trim()

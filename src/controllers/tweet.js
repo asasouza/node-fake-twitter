@@ -49,6 +49,30 @@ exports.details = async (req, res, next) => {
 	}
 };
 
+exports.delete = async (req, res, next) => {
+	const { params: { id }, user } = req;
+	try {
+		const tweet = await Tweet.findById(id);
+		if (!tweet) {
+			const error = new Error('Tweet not found!');
+			error.statusCode = 404;
+			throw error;
+		}
+		if (tweet.author.toString() !== user._id.toString()) {
+			const error = new Error('Only the author can delete this tweet');
+			error.statusCode = 403;
+			throw error;
+		}
+		await tweet.delete();
+		res.json({ message: 'Tweet deleted' });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		return next(err);
+	}
+};
+
 exports.create = async (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
