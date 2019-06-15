@@ -15,7 +15,10 @@ const userSchema = new Schema(
 		type: String,
 		required: true,
 	},
-	picture: String,
+	picture: {
+		type: String,
+		default: 'image/picture'
+	},
 	bio: {
 		type: String,
 		maxLength: 280

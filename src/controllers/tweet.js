@@ -70,8 +70,17 @@ exports.details = async (req, res, next) => {
 			error.statusCode = 404;
 			throw error;
 		}
-
-		res.json({ message: 'Tweet found', tweet });
+		res.json({ 
+			message: 'Tweet found!', 
+			tweet: {
+				_id: tweet._id,
+				author: tweet.author,
+				content: tweet.content,
+				createdAt: tweet.createdAt,
+				updatedAt: tweet.updatedAt,
+				likesCount: tweet.likes.length
+			}
+		});
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;
@@ -98,7 +107,18 @@ exports.list = async (req, res, next) => {
 		.limit(limit)
 		.sort({ createdAt: -1 });
 
-		res.json({ message: 'Tweets Founded', tweets });
+		const tweetsList = tweets.map(tweet => {
+			return {
+				_id: tweet._id,
+				author: tweet.author,
+				content: tweet.content,
+				createdAt: tweet.createdAt,
+				updatedAt: tweet.updatedAt,
+				likesCount: tweet.likes.length
+			};
+		});
+
+		res.json({ message: 'Tweets Founded', tweets: tweetsList });
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;

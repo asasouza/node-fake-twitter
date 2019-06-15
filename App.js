@@ -10,11 +10,13 @@ const server = require('http').Server(app);
 
 const authRoutes = require('./src/routes/auth');
 const tweetRoutes = require('./src/routes/tweet');
+const userRoutes = require('./src/routes/user');
 
 app.use(bodyParser.json());
 
 app.use(authRoutes);
 app.use(tweetRoutes);
+app.use(userRoutes);
 
 // error handler
 app.use((error, req, res, next) => {
