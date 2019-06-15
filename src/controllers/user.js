@@ -2,6 +2,7 @@
 const { validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
 // imports
+const Tweet = require('../models/tweet');
 const User = require('../models/user');
 
 exports.details = async (req, res, next) => {
@@ -35,6 +36,9 @@ exports.details = async (req, res, next) => {
 exports.follow = async (req, res, next) => {
 	const { params: { id }, user } = req;
 	try {
+		if (id.toString() === user._id.toString()) {
+			return res.json({ message: 'Can\'t follow yourself!' });
+		}
 		const followedUser = await User.findById(id);
 		if (!followedUser) {
 			const error = new Error('User not found!');
@@ -62,15 +66,28 @@ exports.follow = async (req, res, next) => {
 
 exports.followers = async (req, res, next) => {
 	const { params: { id } } = req;
+	let { query: { limit, offset } } = req;
 	try {
-		const user = await User.findById(id).populate('followers', ['username', 'picture']);
+		limit = parseInt(limit, 10) || 20;
+		offset = parseInt(offset, 10) || 0;
+
+		const user = await User.findById(id, { followers: { $slice: [offset, limit] } })
+		.populate('followers', ['username', 'picture']);
+
 		if (!user) {
 			const error = new Error('User not found!');
 			error.statusCode = 404;
 			throw error;
 		}
 
-		return res.json({ message: 'Followers founded!', followers: user.followers });
+		let followersCount = await User.findById(id);
+		followersCount = followersCount.followers.length;
+
+		return res.json({ 
+			message: 'Followers founded!', 
+			followers: user.followers,
+			moreResults: followersCount > (offset + limit)
+		});
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;
@@ -81,14 +98,28 @@ exports.followers = async (req, res, next) => {
 
 exports.following = async (req, res, next) => {
 	const { params: { id } } = req;
+	let { query: { limit, offset } } = req;
 	try {
-		const user = await User.findById(id).populate('following', ['username', 'picture']);
+		limit = parseInt(limit, 10) || 20;
+		offset = parseInt(offset, 10) || 0;
+
+		const user = await User.findById(id, { following: { $slice: [offset, limit] } })
+		.populate('following', ['username', 'picture']);
+
 		if (!user) {
 			const error = new Error('User not found!');
 			error.statusCode = 404;
 			throw error;
 		}
-		return res.json({ message: 'Following founded!', following: user.following });
+
+		let followingCount = await User.findById(id);
+		followingCount = followingCount.following.length;
+
+		return res.json({ 
+			message: 'Following founded!', 
+			following: user.following,
+			moreResults: followingCount > (limit + offset)
+		});
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;
@@ -121,6 +152,45 @@ exports.unfollow = async (req, res, next) => {
 		await user.save();
 
 		return res.json({ message: 'Unfollowed!' });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		next(err);
+	}
+};
+
+exports.tweets = async (req, res, next) => {
+	const { params: { id } } = req;
+	let { query: { limit, offset } } = req;
+	try {
+		limit = parseInt(limit, 10) || 20;
+		offset = parseInt(offset, 10) || 0;
+
+		const tweets = await Tweet.find({ author: id })
+		.populate('author', ['username', 'picture'])
+		.skip(offset)
+		.limit(limit)
+		.sort({ createdAt: -1 });
+
+		const totalTweets = await Tweet.estimatedDocumentCount({ author: id });
+
+		const tweetsList = tweets.map(tweet => {
+			return {
+				_id: tweet._id,
+				author: tweet.author,
+				content: tweet.content,
+				createdAt: tweet.createdAt,
+				updatedAt: tweet.updatedAt,
+				likesCount: tweet.likes.length
+			};
+		});
+
+		res.json({ 
+			message: 'Tweets Founded', 
+			tweets: tweetsList,
+			moreResults: totalTweets > (offset + limit)
+		});
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;
@@ -178,5 +248,4 @@ exports.update = async (req, res, next) => {
 		}
 		next(err);
 	}
-
 };

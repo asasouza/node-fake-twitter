@@ -14,6 +14,8 @@ routes.get('/users/:id/followers', userController.followers);
 
 routes.get('/users/:id/following', userController.following);
 
+routes.get('/users/:id/tweets', userController.tweets);
+
 routes.put('/users/:id/follow', isAuth, userController.follow);
 
 routes.put('/users/:id/unfollow', isAuth, userController.unfollow);

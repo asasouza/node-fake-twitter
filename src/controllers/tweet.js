@@ -107,6 +107,14 @@ exports.list = async (req, res, next) => {
 		.limit(limit)
 		.sort({ createdAt: -1 });
 
+		const totalTweets = await Tweet.estimatedDocumentCount({
+			$or: [
+				{ author: user },
+				{ author: { $in: user.following } }
+
+			]
+		});
+		
 		const tweetsList = tweets.map(tweet => {
 			return {
 				_id: tweet._id,
@@ -118,7 +126,11 @@ exports.list = async (req, res, next) => {
 			};
 		});
 
-		res.json({ message: 'Tweets Founded', tweets: tweetsList });
+		res.json({ 
+			message: 'Tweets Founded', 
+			tweets: tweetsList,
+			moreResults: totalTweets > (offset + limit)
+		});
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;
