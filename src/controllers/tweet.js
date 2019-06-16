@@ -89,6 +89,64 @@ exports.details = async (req, res, next) => {
 	}
 };
 
+exports.like = async (req, res, next) => {
+	const { params: { id }, user } = req;
+	try {
+		const tweet = await Tweet.findById(id);
+		if (!tweet) {
+			const error = new Error('Tweet not found!');
+			error.statusCode = 404;
+			throw error;
+		}
+
+		if (tweet.likes.indexOf(user._id.toString()) > -1) {
+			return res.json({ message: 'Tweet already liked!' });
+		}
+
+		tweet.likes.push(user);
+		await tweet.save();
+
+		return res.json({ message: 'Liked!' });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		next(err);
+	}
+};
+
+exports.likes = async (req, res, next) => {
+	let { query: { limit, offset } } = req;
+	const { params: { id } } = req;
+	try {
+		limit = parseInt(limit, 10) || 20;
+		offset = parseInt(offset, 10) || 0;
+
+		const tweet = await Tweet.findById(id, { likes: { $slice: [offset, limit] } })
+		.populate('likes', ['username', 'picture']);
+
+		if (!tweet) {
+			const error = new Error('Tweet not found!');
+			error.statusCode = 404;
+			throw error;
+		}
+
+		let likesCount = await Tweet.findById(id);
+		likesCount = likesCount.likes.length;
+
+		res.json({ 
+			message: 'Liked list found!',
+			likes: tweet.likes,
+			moreResults: likesCount > (limit + offset)
+		});
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		next(err);
+	}
+};
+
 exports.list = async (req, res, next) => {
 	let { query: { limit, offset } } = req;
 	const { user } = req;
@@ -170,5 +228,32 @@ exports.update = async (req, res, next) => {
 			err.statusCode = 500;
 		}
 		return next(err);
+	}
+};
+
+exports.unlike = async (req, res, next) => {
+	const { params: { id }, user } = req;
+	try {
+		const tweet = await Tweet.findById(id);
+		if (!tweet) {
+			const error = new Error('Tweet not found!');
+			error.statusCode = 500;
+			throw error;
+		}
+
+		const likeIndex = tweet.likes.indexOf(user._id.toString());
+		if (likeIndex === -1) {
+			return res.json({ message: 'Tweet already unliked' });
+		}
+
+		tweet.likes.splice(likeIndex, 1);
+		await tweet.save();
+
+		return res.json({ message: 'Unliked' });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		next(err);
 	}
 };

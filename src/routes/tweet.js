@@ -11,7 +11,13 @@ routes.get('/tweets', isAuth, tweetController.list);
 
 routes.get('/tweets/:id', tweetController.details);
 
+routes.get('/tweets/:id/likes', tweetController.likes);
+
 routes.delete('/tweets/:id', isAuth, tweetController.delete);
+
+routes.put('/tweets/:id/like', isAuth, tweetController.like);
+
+routes.put('/tweets/:id/unlike', isAuth, tweetController.unlike);
 
 routes.put('/tweets/:id', isAuth, [
 	body('content')
