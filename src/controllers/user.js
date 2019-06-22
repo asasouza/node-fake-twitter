@@ -1,9 +1,13 @@
 // modules
+const fs = require('fs');
+const path = require('path');
 const { validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
 // imports
 const Tweet = require('../models/tweet');
 const User = require('../models/user');
+// constants
+const { UF_PATH } = require('../config/constants');
 
 exports.details = async (req, res, next) => {
 	const { params: { id } } = req;
@@ -207,7 +211,7 @@ exports.update = async (req, res, next) => {
 		error.data = errors.array();
 		return next(error);
 	}
-	const { body: { email, username, new_password, bio, picture, password }, user } = req;
+	const { body: { email, username, new_password, bio, password }, file, user } = req;
 
 	try {
 		if (!await bcrypt.compare(password, user.password)) {
@@ -228,8 +232,11 @@ exports.update = async (req, res, next) => {
 		if (bio !== undefined) {
 			user.bio = bio;
 		}
-		if (picture) {
-			user.picture = picture;
+		if (file) {
+			if (user.picture) {
+				await fs.unlink(path.join(UF_PATH, user._id.toString(), user.picture));
+			}
+			user.picture = file.filename;
 		}
 
 		await user.save();
@@ -239,7 +246,7 @@ exports.update = async (req, res, next) => {
 				username: user.username,
 				email: user.email,
 				bio: user.bio || '',
-				picture: user.picture
+				picture: path.resolve(UF_PATH, user._id.toString(), user.picture)
 			} 
 		});
 	} catch (err) {

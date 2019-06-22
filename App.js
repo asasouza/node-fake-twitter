@@ -12,6 +12,8 @@ const authRoutes = require('./src/routes/auth');
 const tweetRoutes = require('./src/routes/tweet');
 const userRoutes = require('./src/routes/user');
 
+app.use('/uf', express.static('uf'));
+
 app.use(bodyParser.json());
 
 app.use(authRoutes);

@@ -5,6 +5,7 @@ const { body } = require('express-validator/check');
 const User = require('../models/user');
 const userController = require('../controllers/user');
 const isAuth = require('../helpers/isAuth');
+const fileUploader = require('../helpers/fileUploader');
 
 const routes = express.Router();
 
@@ -20,7 +21,7 @@ routes.put('/users/:id/follow', isAuth, userController.follow);
 
 routes.put('/users/:id/unfollow', isAuth, userController.unfollow);
 
-routes.put('/users', isAuth, [
+routes.put('/users', isAuth, fileUploader.single('picture'), [
 	body('email')
 		.optional()
 		.isEmail()
