@@ -3,11 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const { validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
+const sharp = require('sharp');
 // imports
 const Tweet = require('../models/tweet');
 const User = require('../models/user');
 // constants
-const { UF_PATH } = require('../config/constants');
+const { SITE_URL } = require('../config/constants');
+// helpers
+const { pathToImageProfile } = require('../helpers/pathHelper');
 
 exports.details = async (req, res, next) => {
 	const { params: { id } } = req;
@@ -24,7 +27,8 @@ exports.details = async (req, res, next) => {
 				_id: user._id,
 				username: user.username,
 				bio: user.bio || '',
-				picture: user.picture,
+				picture: pathToImageProfile(user).picture,
+				pictureThumb: pathToImageProfile(user).pictureThumb,
 				followersCount: user.followers.length,
 				followingCount: user.following.length,
 			}
@@ -87,9 +91,17 @@ exports.followers = async (req, res, next) => {
 		let followersCount = await User.findById(id);
 		followersCount = followersCount.followers.length;
 
+		const followers = user.followers.map(user => {
+			return {
+				...user._doc,
+				picture: pathToImageProfile(user).picture,
+				pictureThumb: pathToImageProfile(user).pictureThumb
+			};
+		});
+
 		return res.json({ 
+			followers,
 			message: 'Followers founded!', 
-			followers: user.followers,
 			moreResults: followersCount > (offset + limit)
 		});
 	} catch (err) {
@@ -119,9 +131,17 @@ exports.following = async (req, res, next) => {
 		let followingCount = await User.findById(id);
 		followingCount = followingCount.following.length;
 
+		const following = user.following.map(user => {
+			return {
+				...user._doc,
+				picture: pathToImageProfile(user).picture,
+				pictureThumb: pathToImageProfile(user).pictureThumb
+			};
+		});
+
 		return res.json({ 
-			message: 'Following founded!', 
-			following: user.following,
+			following,
+			message: 'Following founded!',
 			moreResults: followingCount > (limit + offset)
 		});
 	} catch (err) {
@@ -182,7 +202,11 @@ exports.tweets = async (req, res, next) => {
 		const tweetsList = tweets.map(tweet => {
 			return {
 				_id: tweet._id,
-				author: tweet.author,
+				author: {
+					...tweet.author._doc,
+					picture: pathToImageProfile(tweet.author).picture,
+					pictureThumb: pathToImageProfile(tweet.author).pictureThumb
+				},
 				content: tweet.content,
 				createdAt: tweet.createdAt,
 				updatedAt: tweet.updatedAt,
@@ -233,10 +257,40 @@ exports.update = async (req, res, next) => {
 			user.bio = bio;
 		}
 		if (file) {
+			const fileName = file.filename.split('.')[0];
+			await sharp(file.path)
+				.resize(360, 360)
+				.toFile(path.join(file.destination, `${fileName}-thumb.jpeg`));
+			await sharp(file.path)
+				.resize(685, 685)
+				.toBuffer(async (err, buffer) => {
+					if (err) { throw err; }
+					await fs.writeFile(path.join(file.destination, `${fileName}.jpeg`), buffer, error => { 
+						if (error) {
+							throw error; 
+						}
+					});
+				});
+			await fs.unlink(file.path, error => {
+				if (error) {
+					throw error;
+				}
+			});
+
 			if (user.picture) {
-				await fs.unlink(path.join(UF_PATH, user._id.toString(), user.picture));
+				await fs.unlink(path.join(file.destination, `${user.picture}-thumb.jpeg`), error => {
+					if (error) {
+						throw error;
+					}
+				});
+				await fs.unlink(path.join(file.destination, `${user.picture}.jpeg`), error => {
+					if (error) {
+						throw error;
+					}
+				});
 			}
-			user.picture = file.filename;
+
+			user.picture = fileName;
 		}
 
 		await user.save();
@@ -246,7 +300,8 @@ exports.update = async (req, res, next) => {
 				username: user.username,
 				email: user.email,
 				bio: user.bio || '',
-				picture: path.resolve(UF_PATH, user._id.toString(), user.picture)
+				picture: pathToImageProfile(user).picture,
+				pictureThumb: pathToImageProfile(user).pictureThumb,
 			} 
 		});
 	} catch (err) {

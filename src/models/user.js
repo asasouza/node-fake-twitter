@@ -17,7 +17,6 @@ const userSchema = new Schema(
 	},
 	picture: {
 		type: String,
-		default: 'image/picture'
 	},
 	bio: {
 		type: String,

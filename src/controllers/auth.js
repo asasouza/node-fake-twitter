@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 // constants
 const { JWT_SECRET } = require('../config/constants');
+// helper
+const { pathToImageProfile } = require('../helpers/pathHelper');
 
 exports.signup = async (req, res, next) => {
 	const errors = validationResult(req);
@@ -72,7 +74,8 @@ exports.login = async (req, res, next) => {
 		token, 
 		userID: user._id.toString(),
 		username: user.username,
-		picture: user.picture,
+		picture: pathToImageProfile(user).picture,
+		pictureThumb: pathToImageProfile(user).pictureThumb,
 		bio: user.bio
 	});
 };

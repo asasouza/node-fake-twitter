@@ -2,6 +2,8 @@
 const { validationResult } = require('express-validator/check');
 // imports
 const Tweet = require('../models/tweet');
+// helper
+const { pathToImageProfile } = require('../helpers/pathHelper');
 
 exports.create = async (req, res, next) => {
 	const errors = validationResult(req);
@@ -22,8 +24,12 @@ exports.create = async (req, res, next) => {
 		if (!tweet) {
 			throw new Error();
 		}
-
-		tweet.author = { username: user.username, picture: user.picture, _id: user._id };
+		
+		tweet.author = {
+			username: user.username,
+			picture: pathToImageProfile(user).picture
+		};
+		tweet.author.set('pictureThumb', pathToImageProfile(user).pictureThumb, { strict: false });
 
 		res.status(201).json({ 
 			message: 'Tweet created!', 
@@ -74,7 +80,11 @@ exports.details = async (req, res, next) => {
 			message: 'Tweet found!', 
 			tweet: {
 				_id: tweet._id,
-				author: tweet.author,
+				author: {
+					...tweet.author._doc,
+					picture: pathToImageProfile(tweet.author).picture,
+					pictureThumb: pathToImageProfile(tweet.author).pictureThumb,
+				},
 				content: tweet.content,
 				createdAt: tweet.createdAt,
 				updatedAt: tweet.updatedAt,
@@ -134,9 +144,17 @@ exports.likes = async (req, res, next) => {
 		let likesCount = await Tweet.findById(id);
 		likesCount = likesCount.likes.length;
 
+		const likes = tweet.likes.map(user => {
+			return {
+				...user._doc,
+				picture: pathToImageProfile(user).picture,
+				pictureThumb: pathToImageProfile(user).pictureThumb
+			};
+		});
+
 		res.json({ 
+			likes,
 			message: 'Liked list found!',
-			likes: tweet.likes,
 			moreResults: likesCount > (limit + offset)
 		});
 	} catch (err) {
@@ -176,7 +194,11 @@ exports.list = async (req, res, next) => {
 		const tweetsList = tweets.map(tweet => {
 			return {
 				_id: tweet._id,
-				author: tweet.author,
+				author: { 
+					...tweet.author._doc,
+					picture: pathToImageProfile(tweet.author).picture,
+					pictureThumb: pathToImageProfile(tweet.author).pictureThumb
+				},
 				content: tweet.content,
 				createdAt: tweet.createdAt,
 				updatedAt: tweet.updatedAt,
@@ -222,7 +244,12 @@ exports.update = async (req, res, next) => {
 
 		tweet.content = content;
 		await tweet.save();
+
+		tweet.author.set('picture', pathToImageProfile(user).picture, { strict: false });
+		tweet.author.set('pictureThumb', pathToImageProfile(user).pictureThumb, { strict: false });
+
 		res.json({ message: 'Tweet updated successfully', tweet });
+
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;

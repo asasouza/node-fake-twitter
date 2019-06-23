@@ -3,7 +3,7 @@ const path = require('path');
 
 const multer = require('multer');
 
-const { UF_PATH } = require('../config/constants');
+const { IMAGES_MAX_SIZE, UF_PATH } = require('../config/constants');
 
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => {
@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 		cb(null, filePath);
 	},
 	filename: async (req, file, cb) => {
-		cb(null, `profile-${Date.now()}${path.extname(file.originalname)}`);
+		cb(null, `${Date.now()}${path.extname(file.originalname)}`);
 	}
 });
 
@@ -30,6 +30,10 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const fileUploader = multer({ storage, fileFilter });
+const limits = {
+	fileSize: IMAGES_MAX_SIZE
+};
+
+const fileUploader = multer({ storage, fileFilter, limits });
 
 module.exports = fileUploader;
