@@ -7,3 +7,5 @@ module.exports.SITE_URL = 'http://localhost:3000';
 module.exports.UF_PATH = path.resolve(__dirname, '..', '..', 'uf');
 
 exports.IMAGES_MAX_SIZE = 8000000;
+exports.IMAGE_PROFILE_THUMB_SIZE = 360;
+exports.IMAGE_PROFILE_ORIGINAL_SIZE = 685;

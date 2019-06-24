@@ -9,6 +9,8 @@ const Tweet = require('../models/tweet');
 const User = require('../models/user');
 // helpers
 const { pathToImageProfile } = require('../helpers/pathHelper');
+// constants
+const { IMAGE_PROFILE_ORIGINAL_SIZE, IMAGE_PROFILE_THUMB_SIZE } = require('../config/constants');
 
 exports.details = async (req, res, next) => {
 	const { params: { id } } = req;
@@ -258,11 +260,11 @@ exports.update = async (req, res, next) => {
 			const fileName = file.filename.split('.')[0];
 			try {
 				await sharp(file.path)
-					.resize(360, 360)
+					.resize(IMAGE_PROFILE_THUMB_SIZE, IMAGE_PROFILE_THUMB_SIZE)
 					.toFile(path.join(file.destination, `${fileName}-thumb.jpeg`));
 					
 				await sharp(file.path)
-					.resize(685, 685)
+					.resize(IMAGE_PROFILE_ORIGINAL_SIZE, IMAGE_PROFILE_ORIGINAL_SIZE)
 					.toFile(path.join(file.destination, `${fileName}-original.jpeg`));
 					
 				fs.unlink(file.path, error => {

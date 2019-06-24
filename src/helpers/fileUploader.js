@@ -1,9 +1,10 @@
+// modules
 const fs = require('fs');
 const path = require('path');
-
 const multer = require('multer');
-
-const { IMAGES_MAX_SIZE, UF_PATH } = require('../config/constants');
+const sizeOf = require('image-size');
+// constants
+const { IMAGES_MAX_SIZE, IMAGE_PROFILE_ORIGINAL_SIZE, UF_PATH } = require('../config/constants');
 
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => {
@@ -57,7 +58,23 @@ module.exports = (field) => {
 				err.message = 'Validation Failed';
 				return next(err);
 			}
+			const dimensions = sizeOf(req.file.path);
+			if (dimensions.width < IMAGE_PROFILE_ORIGINAL_SIZE || dimensions.height < IMAGE_PROFILE_ORIGINAL_SIZE) {
+				const error = new Error('Validation Failed');
+				error.statusCode = 422;
+				error.data = [{
+					location: 'file',
+					msg: `Image too small. Must have at least ${IMAGE_PROFILE_ORIGINAL_SIZE}px of width and height.`,
+					param: field,
+				}];
+				fs.unlink(req.file.path, err => {
+					if (err) {
+						return next(err);
+					}
+				});
+				return next(error);
+			}
 			next();
-		});	
+		});
 	};
 };
