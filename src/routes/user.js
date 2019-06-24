@@ -21,7 +21,7 @@ routes.put('/users/:id/follow', isAuth, userController.follow);
 
 routes.put('/users/:id/unfollow', isAuth, userController.unfollow);
 
-routes.put('/users', isAuth, fileUploader.single('picture'), [
+routes.put('/users', isAuth, fileUploader('picture'), [
 	body('email')
 		.optional()
 		.isEmail()

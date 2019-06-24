@@ -7,8 +7,6 @@ const sharp = require('sharp');
 // imports
 const Tweet = require('../models/tweet');
 const User = require('../models/user');
-// constants
-const { SITE_URL } = require('../config/constants');
 // helpers
 const { pathToImageProfile } = require('../helpers/pathHelper');
 
@@ -258,39 +256,38 @@ exports.update = async (req, res, next) => {
 		}
 		if (file) {
 			const fileName = file.filename.split('.')[0];
-			await sharp(file.path)
-				.resize(360, 360)
-				.toFile(path.join(file.destination, `${fileName}-thumb.jpeg`));
-			await sharp(file.path)
-				.resize(685, 685)
-				.toBuffer(async (err, buffer) => {
-					if (err) { throw err; }
-					await fs.writeFile(path.join(file.destination, `${fileName}.jpeg`), buffer, error => { 
+			try {
+				await sharp(file.path)
+					.resize(360, 360)
+					.toFile(path.join(file.destination, `${fileName}-thumb.jpeg`));
+					
+				await sharp(file.path)
+					.resize(685, 685)
+					.toFile(path.join(file.destination, `${fileName}-original.jpeg`));
+					
+				fs.unlink(file.path, error => {
+					if (error) {
+						return next(error);
+					}
+				});
+
+				if (user.picture) {
+					fs.unlink(path.join(file.destination, `${user.picture}-thumb.jpeg`), error => {
 						if (error) {
-							throw error; 
+							console.log('LOG ERROR', error.message);
 						}
 					});
-				});
-			await fs.unlink(file.path, error => {
-				if (error) {
-					throw error;
+					fs.unlink(path.join(file.destination, `${user.picture}-original.jpeg`), error => {
+						if (error) {
+							console.log('LOG ERROR', error.message);
+						}
+					});
 				}
-			});
 
-			if (user.picture) {
-				await fs.unlink(path.join(file.destination, `${user.picture}-thumb.jpeg`), error => {
-					if (error) {
-						throw error;
-					}
-				});
-				await fs.unlink(path.join(file.destination, `${user.picture}.jpeg`), error => {
-					if (error) {
-						throw error;
-					}
-				});
+				user.picture = fileName;
+			} catch (err) {
+				throw err;
 			}
-
-			user.picture = fileName;
 		}
 
 		await user.save();

@@ -19,15 +19,19 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype === 'image/png' ||
-    file.mimetype === 'image/jpg' ||
-    file.mimetype === 'image/jpeg'
-  ) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
+	if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+		cb(null, true);
+	} else {
+		const error = new Error('Validation Failed');
+		error.statusCode = 422;
+		error.data = [{
+			location: 'file',
+			msg: 'Allowed image extensions are png, jpg, jpeg.',
+			value: file.originalname,
+			param: file.fieldname
+		}];
+		cb(error, false);
+	}
 };
 
 const limits = {
@@ -36,4 +40,24 @@ const limits = {
 
 const fileUploader = multer({ storage, fileFilter, limits });
 
-module.exports = fileUploader;
+module.exports = (field) => {
+	return (req, res, next) => {
+		fileUploader.single(field)(req, res, err => {
+			if (err) {
+				if (!err.statusCode) {
+					err.statusCode = 422;
+				}
+				if (!err.data) {
+					err.data = [{
+						location: 'file',
+						msg: err.message,
+						param: field
+					}];
+				}
+				err.message = 'Validation Failed';
+				return next(err);
+			}
+			next();
+		});	
+	};
+};
