@@ -43,6 +43,6 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true })
 .then(() => {
-	server.listen(3000, () => console.log('Server Started'));	
+	server.listen(process.env.PORT || 3000, () => console.log('Server Started'));	
 })
 .catch(err => console.log(err));
