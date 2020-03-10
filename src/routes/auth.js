@@ -1,11 +1,15 @@
 // modules
 const express = require('express');
 const { body } = require('express-validator/check');
+const expressBrute = require('express-brute');
 // imports
 const User = require('../models/user');
 const authController = require('../controllers/auth');
 
 const routes = express.Router();
+
+const store = new expressBrute.MemoryStore();
+const bruteForce = new expressBrute(store);
 
 routes.post('/signup', [
 	body('email')
@@ -37,6 +41,7 @@ routes.post('/signup', [
 ], authController.signup);
 
 routes.post('/login', [
+	bruteForce.prevent,
 	body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
 	body('password').trim().not().isEmpty()
 ], authController.login);

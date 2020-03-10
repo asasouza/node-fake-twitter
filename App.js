@@ -2,6 +2,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
+const mongoRateLimit = require('rate-limit-mongo');
+const helmet = require('helmet');
 // constants
 const { MONGODB_URL } = require('./src/config/constants');
 
@@ -13,6 +16,18 @@ const tweetRoutes = require('./src/routes/tweet');
 const userRoutes = require('./src/routes/user');
 
 app.use('/uf', express.static('uf'));
+
+//headers protection
+app.use(helmet());
+
+//rate limiter
+app.use(rateLimit({
+	max: 60,
+	headers: false,
+	store: new mongoRateLimit({
+		uri: MONGODB_URL,
+	}),
+}));
 
 app.use(bodyParser.json());
 
