@@ -30,7 +30,9 @@ app.use(rateLimit({
 }));
 
 app.use(bodyParser.json());
-
+app.get('/', (req, res, next) => {
+	res.send('<p>Welcome to Node Fake Twitter</p>');
+});
 app.use(authRoutes);
 app.use(tweetRoutes);
 app.use(userRoutes);
