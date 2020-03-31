@@ -58,21 +58,23 @@ module.exports = (field) => {
 				err.message = 'Validation Failed';
 				return next(err);
 			}
-			const dimensions = sizeOf(req.file.path);
-			if (dimensions.width < IMAGE_PROFILE_ORIGINAL_SIZE || dimensions.height < IMAGE_PROFILE_ORIGINAL_SIZE) {
-				const error = new Error('Validation Failed');
-				error.statusCode = 422;
-				error.data = [{
-					location: 'file',
-					msg: `Image too small. Must have at least ${IMAGE_PROFILE_ORIGINAL_SIZE}px of width and height.`,
-					param: field,
-				}];
-				fs.unlink(req.file.path, err => {
-					if (err) {
-						return next(err);
-					}
-				});
-				return next(error);
+			if (req.file) {
+				const dimensions = sizeOf(req.file.path);
+				if (dimensions.width < IMAGE_PROFILE_ORIGINAL_SIZE || dimensions.height < IMAGE_PROFILE_ORIGINAL_SIZE) {
+					const error = new Error('Validation Failed');
+					error.statusCode = 422;
+					error.data = [{
+						location: 'file',
+						msg: `Image too small. Must have at least ${IMAGE_PROFILE_ORIGINAL_SIZE}px of width and height.`,
+						param: field,
+					}];
+					fs.unlink(req.file.path, err => {
+						if (err) {
+							return next(err);
+						}
+					});
+					return next(error);
+				}
 			}
 			next();
 		});

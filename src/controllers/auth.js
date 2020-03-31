@@ -89,4 +89,4 @@ exports.validate = (req, res, next) => {
 		return next(error);
 	}
 	res.status(200).json();
-}
+};

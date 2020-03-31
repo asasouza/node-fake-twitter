@@ -3,13 +3,18 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
 {
-	username: {
+	bio: {
 		type: String,
-		required: true
+		maxLength: 160
 	},
 	email: {
 		type: String,
 		required: true,
+	},
+	followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+	following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+	name: {
+		type: String,
 	},
 	password: {
 		type: String,
@@ -18,12 +23,10 @@ const userSchema = new Schema(
 	picture: {
 		type: String,
 	},
-	bio: {
+	username: {
 		type: String,
-		maxLength: 280
+		required: true
 	},
-	followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-	following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 },
 {
 	timestamps: true

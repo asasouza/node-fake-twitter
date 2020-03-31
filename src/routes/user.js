@@ -22,27 +22,11 @@ routes.put('/users/:id/follow', isAuth, userController.follow);
 routes.put('/users/:id/unfollow', isAuth, userController.unfollow);
 
 routes.put('/users', isAuth, fileUploader('picture'), [
-	body('email')
-		.optional()
-		.isEmail()
-		.withMessage('Enter a valid e-mail address')
-		.custom((value, { req }) => {
-			return User.findOne({ email: value }).then(userDoc => {
-				if (userDoc) {
-					return Promise.reject('E-mail address already in use.');
-				}
-			});
-		})
-		.normalizeEmail({ gmail_remove_dots: false }),
-	body('new_password')
+	body('bio')
 		.optional()
 		.trim()
-		.isLength({ min: 6 })
-		.withMessage('New password must be at least 6 characters'),
-	body('password')
-		.not()
-		.isEmpty()
-		.withMessage('Enter the current password to apply changes'),
+		.isLength({ max: 160 })
+		.withMessage('Must be 160 characters or fewer.'),
 	body('username')
 		.optional()
 		.trim()
@@ -50,16 +34,16 @@ routes.put('/users', isAuth, fileUploader('picture'), [
 		.isEmpty()
 		.custom((value, { req }) => {
 			return User.findOne({ username: value }).then(userDoc => {
-				if (userDoc) {
+				if (userDoc && userDoc._id.toString() !== req.user._id.toString()) {
 					return Promise.reject('Username already in use.');
 				}
 			});
 		}),
-	body('bio')
+	body('name')
 		.optional()
 		.trim()
-		.isLength({ max: 280 })
-		.withMessage('Bio maximum characters is 280')
+		.not()
+		.isEmpty(),
 ], userController.update);
 
 module.exports = routes;

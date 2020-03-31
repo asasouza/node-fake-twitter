@@ -25,12 +25,13 @@ exports.details = async (req, res, next) => {
 			message: 'User found!',
 			user: {
 				_id: user._id,
-				username: user.username,
 				bio: user.bio || '',
-				picture: pathToImageProfile(user).picture,
-				pictureThumb: pathToImageProfile(user).pictureThumb,
 				followersCount: user.followers.length,
 				followingCount: user.following.length,
+				name: user.name,
+				picture: pathToImageProfile(user).picture,
+				pictureThumb: pathToImageProfile(user).pictureThumb,
+				username: user.username,
 			}
 		});
 	} catch (err) {
@@ -235,27 +236,20 @@ exports.update = async (req, res, next) => {
 		error.data = errors.array();
 		return next(error);
 	}
-	const { body: { email, username, new_password, bio, password }, file, user } = req;
-
+	const { body: { bio, name, username }, file, user } = req;
 	try {
-		if (!await bcrypt.compare(password, user.password)) {
-			const error = new Error('Wrong password');
-			error.statusCode = 400;
-			throw error;
-		}
-
-		if (email) {
-			user.email = email;
-		}
-		if (username) {
-			user.username = username;
-		}
-		if (new_password) {
-			user.password = await bcrypt.hash(new_password, 12);
-		}
 		if (bio !== undefined) {
 			user.bio = bio;
 		}
+
+		if(name !== undefined) {
+			user.name = name;
+		}
+
+		if (username) {
+			user.username = username;
+		}
+		
 		if (file) {
 			const fileName = file.filename.split('.')[0];
 			try {
@@ -296,9 +290,9 @@ exports.update = async (req, res, next) => {
 		res.json({ 
 			message: 'User updated!', 
 			user: {
-				username: user.username,
-				email: user.email,
 				bio: user.bio || '',
+				name: user.name,
+				username: user.username,
 				picture: pathToImageProfile(user).picture,
 				pictureThumb: pathToImageProfile(user).pictureThumb,
 			} 
