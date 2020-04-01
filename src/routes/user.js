@@ -42,6 +42,8 @@ routes.put('/users', isAuth, fileUploader('picture'), [
 	body('name')
 		.optional()
 		.trim()
+		.isLength({ max: 50 })
+		.withMessage('Must be 50 characters or fewer.')
 		.not()
 		.isEmpty(),
 ], userController.update);
