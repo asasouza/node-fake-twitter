@@ -267,7 +267,7 @@ exports.update = async (req, res, next) => {
 					}
 				});
 
-				if (user.picture) {
+				if (user.picture && user.picture !== 'default') {
 					fs.unlink(path.join(file.destination, `${user.picture}-thumb.jpeg`), error => {
 						if (error) {
 							console.log('LOG ERROR', error.message);
