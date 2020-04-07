@@ -71,12 +71,13 @@ exports.login = async (req, res, next) => {
 		JWT_SECRET
 	);
 	res.status(200).json({ 
+		bio: user.bio,
+		name: user.name,
+		picture: pathToImageProfile(user).picture,
+		pictureThumb: pathToImageProfile(user).pictureThumb,
 		token, 
 		userID: user._id.toString(),
 		username: user.username,
-		picture: pathToImageProfile(user).picture,
-		pictureThumb: pathToImageProfile(user).pictureThumb,
-		bio: user.bio
 	});
 };
 
