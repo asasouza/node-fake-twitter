@@ -4,18 +4,18 @@ const { body } = require('express-validator/check');
 // imports
 const User = require('../models/user');
 const userController = require('../controllers/user');
-const isAuth = require('../helpers/isAuth');
+const { isAuth, isPublic } = require('../helpers/isAuth');
 const fileUploader = require('../helpers/fileUploader');
 
 const routes = express.Router();
 
-routes.get('/users/:id', userController.details);
+routes.get('/users/:id', isPublic, isAuth, userController.details);
 
-routes.get('/users/:id/followers', userController.followers);
+routes.get('/users/:id/followers', isPublic, isAuth, userController.followers);
 
-routes.get('/users/:id/following', userController.following);
+routes.get('/users/:id/following', isPublic, isAuth, userController.following);
 
-routes.get('/users/:id/tweets', userController.tweets);
+routes.get('/users/:id/tweets', isPublic, isAuth, userController.tweets);
 
 routes.put('/users/:id/follow', isAuth, userController.follow);
 

@@ -3,15 +3,15 @@ const express = require('express');
 const { body } = require('express-validator/check');
 // imports
 const tweetController = require('../controllers/tweet');
-const isAuth = require('../helpers/isAuth');
+const { isAuth, isPublic } = require('../helpers/isAuth');
 
 const routes = express.Router();
 
 routes.get('/tweets', isAuth, tweetController.list);
 
-routes.get('/tweets/:id', tweetController.details);
+routes.get('/tweets/:id', isPublic, isAuth, tweetController.details);
 
-routes.get('/tweets/:id/likes', tweetController.likes);
+routes.get('/tweets/:id/likes', isPublic, isAuth, tweetController.likes);
 
 routes.delete('/tweets/:id', isAuth, tweetController.delete);
 

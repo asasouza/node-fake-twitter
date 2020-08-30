@@ -5,8 +5,11 @@ const User = require('../models/user');
 // constants
 const { JWT_SECRET } = require('../config/constants');
 
-module.exports = async (req, res, next) => {
+exports.isAuth = async (req, res, next) => {
 	if (!req.headers.authorization) {
+		if (req.public) {
+			return next();
+		}
 		const error = new Error('Forbidden route, to access must provide a valid Authorization');
 		error.statusCode = 403;
 		return next(error);
@@ -31,3 +34,8 @@ module.exports = async (req, res, next) => {
 		return next(err);
 	}
 };
+
+exports.isPublic = (req, res, next) => {
+	req.public = true;
+	next();
+}

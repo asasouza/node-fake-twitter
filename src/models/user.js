@@ -24,6 +24,10 @@ const userSchema = new Schema(
 		type: String,
 		default: 'default',
 	},
+	pictureThumb: {
+		type: String,
+		default: 'default'
+	},
 	username: {
 		type: String,
 		required: true

@@ -2,8 +2,6 @@
 const { validationResult } = require('express-validator/check');
 // imports
 const Tweet = require('../models/tweet');
-// helper
-const { pathToImageProfile } = require('../helpers/pathHelper');
 
 exports.create = async (req, res, next) => {
 	const errors = validationResult(req);
@@ -26,10 +24,10 @@ exports.create = async (req, res, next) => {
 		}
 		
 		tweet.author = {
+			picture: user.picture,
+			pictureThumb: user.pictureThumb,
 			username: user.username,
-			picture: pathToImageProfile(user).picture
 		};
-		tweet.author.set('pictureThumb', pathToImageProfile(user).pictureThumb, { strict: false });
 
 		res.status(201).json({ 
 			message: 'Tweet created!', 
@@ -68,27 +66,25 @@ exports.delete = async (req, res, next) => {
 };
 
 exports.details = async (req, res, next) => {
-	const { params: { id } } = req;
+	const { params: { id }, user } = req;
 	try {
-		const tweet = await Tweet.findById(id).populate('author', ['username', 'picture']);
+		const tweet = await Tweet.findById(id).populate('author', ['name', 'picture', 'pictureThumb', 'username']);
 		if (!tweet) {
 			const error = new Error('Tweet not found!');
 			error.statusCode = 404;
 			throw error;
 		}
+		const isLiked = user ? tweet.likes.includes(user._id.toString()) : false;
 		res.json({ 
 			message: 'Tweet found!', 
 			tweet: {
 				_id: tweet._id,
-				author: {
-					...tweet.author._doc,
-					picture: pathToImageProfile(tweet.author).picture,
-					pictureThumb: pathToImageProfile(tweet.author).pictureThumb,
-				},
+				author: tweet.author._doc,
 				content: tweet.content,
 				createdAt: tweet.createdAt,
+				isLiked,
+				likesCount: tweet.likes.length,
 				updatedAt: tweet.updatedAt,
-				likesCount: tweet.likes.length
 			}
 		});
 	} catch (err) {
@@ -127,13 +123,13 @@ exports.like = async (req, res, next) => {
 
 exports.likes = async (req, res, next) => {
 	let { query: { limit, offset } } = req;
-	const { params: { id } } = req;
+	const { params: { id }, user: loggedUser } = req;
 	try {
 		limit = parseInt(limit, 10) || 20;
 		offset = parseInt(offset, 10) || 0;
 
 		const tweet = await Tweet.findById(id, { likes: { $slice: [offset, limit] } })
-		.populate('likes', ['username', 'picture']);
+		.populate('likes', ['followers', 'name', 'picture', 'pictureThumb', 'username']);
 
 		if (!tweet) {
 			const error = new Error('Tweet not found!');
@@ -143,12 +139,14 @@ exports.likes = async (req, res, next) => {
 
 		let likesCount = await Tweet.findById(id);
 		likesCount = likesCount.likes.length;
-
 		const likes = tweet.likes.map(user => {
 			return {
-				...user._doc,
-				picture: pathToImageProfile(user).picture,
-				pictureThumb: pathToImageProfile(user).pictureThumb
+				_id: user._id,
+				isFollowing: loggedUser ? user.followers.includes(loggedUser._id.toString()) : false,
+				name: user.name,
+				picture: user.picture,
+				pictureThumb: user.pictureThumb,
+				username: user.username,
 			};
 		});
 
@@ -178,7 +176,7 @@ exports.list = async (req, res, next) => {
 
 			]
 		})
-		.populate('author', ['username', 'picture'])
+		.populate('author', ['name', 'picture', 'pictureThumb', 'username', ])
 		.skip(offset)
 		.limit(limit)
 		.sort({ createdAt: -1 });
@@ -194,62 +192,20 @@ exports.list = async (req, res, next) => {
 		const tweetsList = tweets.map(tweet => {
 			return {
 				_id: tweet._id,
-				author: { 
-					...tweet.author._doc,
-					picture: pathToImageProfile(tweet.author).picture,
-					pictureThumb: pathToImageProfile(tweet.author).pictureThumb
-				},
+				author: tweet.author._doc,
 				content: tweet.content,
 				createdAt: tweet.createdAt,
+				isLiked: tweet.likes.includes(user._id.toString()),
+				likesCount: tweet.likes.length,
 				updatedAt: tweet.updatedAt,
-				likesCount: tweet.likes.length
 			};
 		});
 
 		res.json({ 
 			message: 'Tweets Founded', 
+			moreResults: totalTweets > (offset + limit),
 			tweets: tweetsList,
-			moreResults: totalTweets > (offset + limit)
 		});
-	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = 500;
-		}
-		return next(err);
-	}
-};
-
-exports.update = async (req, res, next) => {
-	const { body: { content }, params: { id }, user } = req;
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		const error = new Error('Validation Failed');
-		error.statusCode = 422;
-		error.data = errors.array();
-		return next(error);
-	}
-
-	try {
-		const tweet = await Tweet.findById(id).populate('author', ['username', 'picture']);
-		if (!tweet) {
-			const error = new Error('Tweet not found');
-			error.statusCode = 404;
-			throw error;
-		}
-		if (tweet.author._id.toString() !== user._id.toString()) {
-			const error = new Error('Only the author can update this tweet');
-			error.statusCode = 403;
-			throw error;
-		}
-
-		tweet.content = content;
-		await tweet.save();
-
-		tweet.author.set('picture', pathToImageProfile(user).picture, { strict: false });
-		tweet.author.set('pictureThumb', pathToImageProfile(user).pictureThumb, { strict: false });
-
-		res.json({ message: 'Tweet updated successfully', tweet });
-
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;
@@ -284,3 +240,43 @@ exports.unlike = async (req, res, next) => {
 		next(err);
 	}
 };
+
+exports.update = async (req, res, next) => {
+	const { body: { content }, params: { id }, user } = req;
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const error = new Error('Validation Failed');
+		error.statusCode = 422;
+		error.data = errors.array();
+		return next(error);
+	}
+
+	try {
+		const tweet = await Tweet.findById(id).populate('author', ['picture', 'pictureThumb', 'username']);
+		if (!tweet) {
+			const error = new Error('Tweet not found');
+			error.statusCode = 404;
+			throw error;
+		}
+		if (tweet.author._id.toString() !== user._id.toString()) {
+			const error = new Error('Only the author can update this tweet');
+			error.statusCode = 403;
+			throw error;
+		}
+
+		tweet.content = content;
+		await tweet.save();
+
+		tweet.author.set('picture', user.picture, { strict: false });
+		tweet.author.set('pictureThumb', user.pictureThumb, { strict: false });
+
+		res.json({ message: 'Tweet updated successfully', tweet });
+
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		return next(err);
+	}
+};
+
