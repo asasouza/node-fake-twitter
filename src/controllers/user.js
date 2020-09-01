@@ -1,8 +1,7 @@
 // modules
-const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator/check');
-const fs = require('fs');
-const path = require('path');
+// const fs = require('fs');
+// const path = require('path');
 const sharp = require('sharp');
 // imports
 const Tweet = require('../models/tweet');
@@ -77,14 +76,14 @@ exports.follow = async (req, res, next) => {
 };
 
 exports.followers = async (req, res, next) => {
-	const { params: { id } } = req;
-	let { query: { limit, offset }, loggedUser } = req;
+	const { params: { id }, loggedUser } = req;
+	let { query: { limit, offset } } = req;
 	try {
 		limit = parseInt(limit, 10) || 20;
 		offset = parseInt(offset, 10) || 0;
 
 		const user = await User.findById(id, { followers: { $slice: [offset, limit] } })
-			.populate('followers', ['followers', 'name', 'picture', 'pictureThumb', 'username']);
+			.populate('followers', ['bio', 'followers', 'name', 'picture', 'pictureThumb', 'username']);
 
 		if (!user) {
 			const error = new Error('User not found!');
@@ -98,6 +97,7 @@ exports.followers = async (req, res, next) => {
 		const followers = user.followers.map(user => {
 			return {
 				_id: user._id,
+				bio: user.bio,
 				isFollowing: loggedUser ? user.followers.includes(loggedUser._id.toString()) : false,
 				name: user.name,
 				picture: user.picture,
@@ -120,14 +120,14 @@ exports.followers = async (req, res, next) => {
 };
 
 exports.following = async (req, res, next) => {
-	const { params: { id } } = req;
-	let { query: { limit, offset }, loggedUser } = req;
+	const { params: { id }, loggedUser } = req;
+	let { query: { limit, offset } } = req;
 	try {
 		limit = parseInt(limit, 10) || 20;
 		offset = parseInt(offset, 10) || 0;
 
 		const user = await User.findById(id, { following: { $slice: [offset, limit] } })
-			.populate('following', ['followers', 'name', 'picture', 'pictureThumb', 'username']);
+			.populate('following', ['bio', 'followers', 'name', 'picture', 'pictureThumb', 'username']);
 
 		if (!user) {
 			const error = new Error('User not found!');
@@ -141,6 +141,7 @@ exports.following = async (req, res, next) => {
 		const following = user.following.map(user => {
 			return {
 				_id: user._id,
+				bio: user.bio,
 				isFollowing: loggedUser ? user.followers.includes(loggedUser._id.toString()) : false,
 				name: user.name,
 				picture: user.picture,
@@ -195,14 +196,14 @@ exports.unfollow = async (req, res, next) => {
 };
 
 exports.tweets = async (req, res, next) => {
-	const { params: { id } } = req;
-	let { query: { limit, offset }, user } = req;
+	const { params: { id }, user } = req;
+	let { query: { limit, offset } } = req;
 	try {
 		limit = parseInt(limit, 10) || 20;
 		offset = parseInt(offset, 10) || 0;
 
 		const tweets = await Tweet.find({ author: id })
-			.populate('author', ['name', 'picture', 'pictureThumb', 'username',])
+			.populate('author', ['name', 'picture', 'pictureThumb', 'username'])
 			.skip(offset)
 			.limit(limit)
 			.sort({ createdAt: -1 });

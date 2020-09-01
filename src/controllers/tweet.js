@@ -129,7 +129,7 @@ exports.likes = async (req, res, next) => {
 		offset = parseInt(offset, 10) || 0;
 
 		const tweet = await Tweet.findById(id, { likes: { $slice: [offset, limit] } })
-		.populate('likes', ['followers', 'name', 'picture', 'pictureThumb', 'username']);
+		.populate('likes', ['bio', 'followers', 'name', 'picture', 'pictureThumb', 'username']);
 
 		if (!tweet) {
 			const error = new Error('Tweet not found!');
@@ -142,6 +142,7 @@ exports.likes = async (req, res, next) => {
 		const likes = tweet.likes.map(user => {
 			return {
 				_id: user._id,
+				bio: user.bio,
 				isFollowing: loggedUser ? user.followers.includes(loggedUser._id.toString()) : false,
 				name: user.name,
 				picture: user.picture,
@@ -271,7 +272,6 @@ exports.update = async (req, res, next) => {
 		tweet.author.set('pictureThumb', user.pictureThumb, { strict: false });
 
 		res.json({ message: 'Tweet updated successfully', tweet });
-
 	} catch (err) {
 		if (!err.statusCode) {
 			err.statusCode = 500;
