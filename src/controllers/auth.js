@@ -1,8 +1,9 @@
 // modules
-const { validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator/check');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const path = require('path');
 // imports
 const User = require('../models/user');
 // constants
@@ -19,9 +20,9 @@ exports.signup = async (req, res, next) => {
 	const { email, password, username } = req.body;
 	try {
 		const hashedPassword = await bcrypt.hash(password, 12);
-		let picture = await fs.readFile('../../uf/default/default-original.png');
+		let picture = fs.readFileSync(path.join(__dirname, '..', '..', 'uf', 'default', 'default-original.png'));
 		picture = picture.toString('base64');
-		let pictureThumb = await fs.readFile('../../uf/default/default-thumb.png');
+		let pictureThumb = fs.readFileSync(path.join(__dirname, '..', '..', 'uf', 'default', 'default-thumb.png'));
 		pictureThumb = picture.toString('base64');
 
 		const user = await new User({
