@@ -302,6 +302,7 @@ exports.update = async (req, res, next) => {
 			message: 'User updated!',
 			user: {
 				bio: user.bio || '',
+				_id: user._id,
 				name: user.name,
 				picture: user.picture,
 				pictureThumb: user.pictureThumb,
