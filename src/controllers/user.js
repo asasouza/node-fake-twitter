@@ -10,7 +10,7 @@ const User = require('../models/user');
 const { IMAGE_PROFILE_ORIGINAL_SIZE, IMAGE_PROFILE_THUMB_SIZE } = require('../config/constants');
 
 exports.details = async (req, res, next) => {
-	const { params: { id }, loggedUser } = req;
+	const { params: { id }, user: loggedUser } = req;
 	try {
 		const user = await User.findById(id);
 		if (!user) {
@@ -76,7 +76,7 @@ exports.follow = async (req, res, next) => {
 };
 
 exports.followers = async (req, res, next) => {
-	const { params: { id }, loggedUser } = req;
+	const { params: { id }, user:loggedUser } = req;
 	let { query: { limit, offset } } = req;
 	try {
 		limit = parseInt(limit, 10) || 20;
@@ -120,7 +120,7 @@ exports.followers = async (req, res, next) => {
 };
 
 exports.following = async (req, res, next) => {
-	const { params: { id }, loggedUser } = req;
+	const { params: { id }, user: loggedUser } = req;
 	let { query: { limit, offset } } = req;
 	try {
 		limit = parseInt(limit, 10) || 20;
