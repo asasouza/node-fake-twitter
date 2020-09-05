@@ -2,6 +2,7 @@
 const { validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 // imports
 const User = require('../models/user');
 // constants
@@ -18,9 +19,16 @@ exports.signup = async (req, res, next) => {
 	const { email, password, username } = req.body;
 	try {
 		const hashedPassword = await bcrypt.hash(password, 12);
+		let picture = await fs.readFile('../../uf/default/default-original.png');
+		picture = picture.toString('base64');
+		let pictureThumb = await fs.readFile('../../uf/default/default-thumb.png');
+		pictureThumb = picture.toString('base64');
+
 		const user = await new User({
 			email,
 			password: hashedPassword,
+			picture,
+			pictureThumb,
 			username
 		}).save();
 		const token = jwt.sign(
