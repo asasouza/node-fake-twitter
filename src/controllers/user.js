@@ -208,7 +208,7 @@ exports.tweets = async (req, res, next) => {
 			.limit(limit)
 			.sort({ createdAt: -1 });
 
-		const totalTweets = await Tweet.estimatedDocumentCount({ author: id });
+		const totalTweets = await Tweet.countDocuments({ author: id });
 
 		const tweetsList = tweets.map(tweet => {
 			return {

@@ -177,12 +177,12 @@ exports.list = async (req, res, next) => {
 
 			]
 		})
-		.populate('author', ['name', 'picture', 'pictureThumb', 'username', ])
+		.populate('author', ['name', 'picture', 'pictureThumb', 'username'])
 		.skip(offset)
 		.limit(limit)
 		.sort({ createdAt: -1 });
 
-		const totalTweets = await Tweet.estimatedDocumentCount({
+		const totalTweets = await Tweet.countDocuments({
 			$or: [
 				{ author: user },
 				{ author: { $in: user.following } }
