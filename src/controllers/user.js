@@ -18,7 +18,7 @@ exports.details = async (req, res, next) => {
 			error.statusCode = 404;
 			throw error;
 		}
-		const totalTweets = await Tweet.estimatedDocumentCount({ author: id });
+		const totalTweets = await Tweet.countDocuments({ author: id });
 
 		res.json({
 			message: 'User found!',
