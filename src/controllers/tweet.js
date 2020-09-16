@@ -24,6 +24,7 @@ exports.create = async (req, res, next) => {
 		}
 		
 		tweet.author = {
+			name: user.name, 
 			picture: user.picture,
 			pictureThumb: user.pictureThumb,
 			username: user.username,
