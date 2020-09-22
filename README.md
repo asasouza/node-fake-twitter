@@ -14,7 +14,8 @@ Com o objetivo de simular o funcionamento do micro-blog Twitter, o escopo do pro
     
 Para atender tais requisitos e manter o projeto simples, a API e Banco de Dados foram baseadas em dois Modelos de Dados: __Tweet__ e __User__; Cujos relacionamentos e estruturas podem ser visualizados no Diagrama abaixo:
 
-[---- DIAGRAMA ----]
+<p align="center"><img src="https://github.com/asasouza/node-fake-twitter/blob/master/diagram.png"  /></p>
+
 
 Para tornar a aplicação real, as seguintes tecnologias/pacotes/frameworks foram utilizadas:
  - Express JS, para o gerenciamento de rotas, _middlewares_, recebimento e envio de dados, etc; E em conjunto foram utilizados outros pacotes para aumentar a capacidade do framework:
