@@ -26,9 +26,10 @@ Para tornar a aplicação real, as seguintes tecnologias/pacotes/frameworks fora
    - BCryptJS e JWT: para armazenamento seguro de senhas e criação de _tokens_ de acesso à API;
  - MongoDB + Mongoose, banco de dados NoSQL e ODM para comunicação com esta BD; Durante o desenvolvimento do projeto foi utilizado o serviço [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) para hospedagem do banco de dados, adotado por ser uma solução gratuita, no caso deste projeto de estudo, e rápida sem a necessidade de configurar um ambiente especifico para o banco de dados;
 
-A API encontra-se disponível neste [link](https://node-fake-twitter.herokuapp.com/) atraves do serviço de hospedagem [Heroku](https://heroku.com/). Para uso em ambiente local, ou futuras implementações, é necessário que o arquivo ```config/constants.js``` seja alterado 
+A API encontra-se disponível neste [endpoint](https://node-fake-twitter.herokuapp.com/) atraves do serviço de hospedagem [Heroku](https://heroku.com/). Para uso em ambiente local, ou futuras implementações, é necessário que o arquivo ```config/constants.js``` seja alterado. 
+
 ### Documentação da API
-A documentação da API encontra-se disponível neste [arquivo](), que contêm todas as rotas da aplicação, assim como exemplos dos possíveis retornos.
+A documentação da API encontra-se disponível [neste link](https://documenter.getpostman.com/view/4738635/TVKEVbm1), que contêm todas as rotas da aplicação, assim como exemplos dos possíveis retornos.
 
 __Veja também__: [Flutter Fake Twitter](https://github.com/asasouza/flutter-fake-twitter), um app escrito com o framework Flutter (Dart), e que utiliza esta API, para replicar a interface e funcionamento do Twitter.
     
