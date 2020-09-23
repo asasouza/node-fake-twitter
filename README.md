@@ -4,6 +4,7 @@
 ### Escopo do Projeto e Tecnologias
 Com o objetivo de simular o funcionamento do micro-blog Twitter, o escopo do projeto se limitou as funcionalidades básicas da plataforma de estudo. Neste quesito os requisitos para a construção da API foram:
   - O usuário deve ter a capacidade de se cadastrar na plataforma e inserir informaçoões pessoais básicas (nome, usuário, bio e foto), e futuramente altera-las;
+    - O _username_ e e-mail do usuário devem ser únicos para cada registro.
   - O usuário, após cadastrado, deve ter a capacidade de realizar o _login_ e  utilizar a API para inserir conteúdo (_Tweets_) e seguir outros usuários;
   - Dar ao usuário a possibilidade de dar _likes_ nos tweets disponíveis;
   - O usuário deve ser capaz de apagar e deixar de seguir outros usuários;
