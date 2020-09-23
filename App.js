@@ -31,7 +31,7 @@ app.use(rateLimit({
 
 app.use(bodyParser.json());
 app.get('/', (req, res, next) => {
-	res.send('<p>Welcome to Node Fake Twitter</p>');
+	res.redirect(308, 'https://github.com/asasouza/node-fake-twitter');
 });
 app.use(authRoutes);
 app.use(tweetRoutes);
