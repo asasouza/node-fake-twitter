@@ -73,11 +73,11 @@ module.exports = (field) => {
 						msg: `Image too small. Must have at least ${IMAGE_PROFILE_ORIGINAL_SIZE}px of width and height.`,
 						param: field,
 					}];
-					fs.unlink(req.file.path, err => {
-						if (err) {
-							return next(err);
-						}
-					});
+					// fs.unlink(req.file.path, err => {
+					// 	if (err) {
+					// 		return next(err);
+					// 	}
+					// });
 					return next(error);
 				}
 			}
